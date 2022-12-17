@@ -33,7 +33,7 @@ def get_token_from_chrom() -> str:
 
 
 def save_token_in_file(token: str):
-    """Сохроняет токен в файл"""
+    """Сохраняет токен в файл"""
     with open('token.txt', 'w', encoding='utf-8') as f:
         f.write(token)
     logging.info('Токен сохранен в файл')
