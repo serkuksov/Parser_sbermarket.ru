@@ -32,7 +32,7 @@ def get_products(name_products: str, number_market: int = 62) -> list[dict]:
             'page': page,
             'per_page': '20',
         }
-        response = requests.get('https://sbermarket.ru/api/v3/stores/62/products', params=params, headers=headers)
+        response = requests.get(f'https://sbermarket.ru/api/v3/stores/{number_market}/products', params=params, headers=headers)
         if 'errors' in response.text:
             headers['client-token'] = get_token_from_chrom()
             response = requests.get(f'https://sbermarket.ru/api/v3/stores/{number_market}/products', params=params, headers=headers)
