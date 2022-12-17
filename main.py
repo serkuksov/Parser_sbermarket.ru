@@ -25,17 +25,20 @@ def get_products(name_products: str, number_market: int = 62) -> list[dict]:
             'accept-language': 'ru,en;q=0.9',
             'api-version': '3.0',
             'client-token': get_token_from_file(),
-            # 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 YaBrowser/22.11.3.838 Yowser/2.5 Safari/537.36',
         }
         params = {
             'q': name_products,
             'page': page,
             'per_page': '20',
         }
-        response = requests.get(f'https://sbermarket.ru/api/v3/stores/{number_market}/products', params=params, headers=headers)
+        response = requests.get(f'https://sbermarket.ru/api/v3/stores/{number_market}/products',
+                                params=params,
+                                headers=headers)
         if 'errors' in response.text:
             headers['client-token'] = get_token_from_chrom()
-            response = requests.get(f'https://sbermarket.ru/api/v3/stores/{number_market}/products', params=params, headers=headers)
+            response = requests.get(f'https://sbermarket.ru/api/v3/stores/{number_market}/products',
+                                    params=params,
+                                    headers=headers)
         content_json = response.json()
         total_pages = int(content_json['meta']['total_pages'])
         total_count = int(content_json['meta']['total_count'])
