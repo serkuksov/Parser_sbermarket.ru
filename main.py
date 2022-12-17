@@ -50,5 +50,9 @@ def get_products(name_products: str, number_market: int = 62) -> list[dict]:
 
 
 if __name__ == '__main__':
-    products = get_products(name_products='сок', number_market=62)
-    pprint(products)
+    logging.basicConfig(level=logging.INFO)
+    try:
+        products = get_products(name_products='сок', number_market=62)
+        pprint(products)
+    except FileNotFoundError:
+        pass

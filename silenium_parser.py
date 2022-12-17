@@ -5,17 +5,25 @@ from webdriver_manager.chrome import ChromeDriverManager
 import undetected_chromedriver as uc
 
 
-URL = 'https://sbermarket.ru/metro'
 BROWSER_PATH = '/opt/google/chrome/chrome'
-logging.basicConfig(level=logging.INFO)
 
 
 def get_token_from_chrom() -> str:
-    """Получить токен открыв Сбермаркет в хроме"""
+    """Получить токен открыв Сбермаркет в хроме.
+    В случае если путь к браузеру не определился автоматически укажите его принудительно
+    в переменной BROWSER_PATH"""
     driver_path = ChromeDriverManager().install()
     logging.info('Открываю браузер хром для получения токена')
-    driver = uc.Chrome(driver_executable_path=driver_path, browser_executable_path='/opt/google/chrome/chrome')
-    driver.get(URL)
+    try:
+        driver = uc.Chrome(driver_executable_path=driver_path)
+    except TypeError:
+        logging.error('Не найден путь к браузеру Chrome. Считываю путь из переменной BROWSER_PATH')
+        try:
+            driver = uc.Chrome(driver_executable_path=driver_path, browser_executable_path=BROWSER_PATH)
+        except FileNotFoundError:
+            logging.error(f'Не корректно задан путь к браузеру Chrome в переменной BROWSER_PATH={BROWSER_PATH}')
+            raise FileNotFoundError
+    driver.get('https://sbermarket.ru/')
     time.sleep(5)
     token = re.findall('STOREFRONT_API_V3_CLIENT_TOKEN: "([^"]+)"', driver.page_source)[0]
     driver.quit()
