@@ -105,4 +105,7 @@ if __name__ == '__main__':
         products = get_products(name_products='сок', number_market=62, proxies=proxies)
         pprint(products)
     except FileNotFoundError:
-        pass
+        logging.error('Ошибка в работе виртуального дисплея'
+                      'sudo apt install x11-utils gnumeric '
+                      'или'
+                      'sudo apt-get install xvfb xserver-xephyr tigervnc-standalone-server x11-utils gnumeric')
