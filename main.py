@@ -45,8 +45,9 @@ def get_products(name_products: str,
         total_pages = int(content_json['meta']['total_pages'])
         total_count = int(content_json['meta']['total_count'])
         for product in content_json['products']:
+            # Возможно получение прочих параметров из словаря content_json
             params = {
-                'id': product['id'],
+                'id': product['sku'],
                 'name': product['name'],
                 'image_urls': product['image_urls'],
                 'price': product['price'],
@@ -82,6 +83,7 @@ def get_other_params_product(url_product: str, proxies: dict[str: str] = None) -
         cookies = get_token_and_cookies_from_chrom()['cookies']
         response = requests.get(url=url_product, cookies=cookies, headers=headers, proxies=proxies)
     content_json = response.json()
+    # Возможно получение прочих параметров из словаря content_json
     other_params = {
         'brand': content_json['product']['brand']['name'],
         'stock': content_json['product']['offer']['stock'],
