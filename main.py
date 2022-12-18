@@ -2,10 +2,13 @@ import logging
 import time
 from pprint import pprint
 import requests
-from silenium_parser import get_token_from_file, get_token_from_chrom
+from silenium_parser import get_token_from_file, get_token_and_cookies_from_chrom, get_cookies_from_file
 
 
-def get_products(name_products: str, number_market: int = 62) -> list[dict]:
+def get_products(name_products: str,
+                 number_market: int,
+                 delay: float = 0.2,
+                 need_other_params: bool = True) -> list[dict]:
     """Функция получения информации по продуктам из определенного магазина
     по наименованию.
     В качестве донора используется сайт https://sbermarket.ru/ на котором
@@ -18,6 +21,7 @@ def get_products(name_products: str, number_market: int = 62) -> list[dict]:
     """
     products = []
     page = 1
+    number_products = 1
     logging.info('Начинаю получать информация по продуктам')
     while True:
         headers = {
@@ -33,23 +37,60 @@ def get_products(name_products: str, number_market: int = 62) -> list[dict]:
         }
         response = requests.get(f'https://sbermarket.ru/api/v3/stores/{number_market}/products',
                                 params=params,
-                                headers=headers)
-        if 'errors' in response.text:
-            headers['client-token'] = get_token_from_chrom()
+                                headers=headers
+                                )
+        if response.status_code == 401:
+            headers['client-token'] = get_token_and_cookies_from_chrom()['token']
             response = requests.get(f'https://sbermarket.ru/api/v3/stores/{number_market}/products',
                                     params=params,
                                     headers=headers)
         content_json = response.json()
         total_pages = int(content_json['meta']['total_pages'])
         total_count = int(content_json['meta']['total_count'])
-        products += content_json['products']
+
+        for product in content_json['products']:
+            params = {
+                'id': product['id'],
+                'name': product['name'],
+                'image_urls': product['image_urls'],
+                'price': product['price'],
+                'original_price': product['original_price'],
+                'number_products': number_products
+            }
+            if need_other_params:
+                url_product = f'https://sbermarket.ru/api/stores/{number_market}/products/{product["slug"]}'
+                other_params = get_other_params_product(url_product)
+                params = {**params, **other_params}
+            products.append(params)
+            logging.info(f'Получено {number_products} из {total_count} продуктов')
+            number_products += 1
         if page == total_pages:
             logging.info(f'Получено {total_count} из {total_count} продуктов')
             break
-        logging.info(f'Получено {page * 20} из {total_count} продуктов')
         page += 1
-        time.sleep(1)
+        time.sleep(delay)
     return products
+
+
+def get_other_params_product(url_product: str) -> dict:
+    headers = {
+        'referer': 'https://sbermarket.ru/metro/search?keywords=cjr',
+        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/108.0.0.0 Safari/537.36'
+    }
+    cookies = get_cookies_from_file()
+    response = requests.get(url=url_product, cookies=cookies, headers=headers)
+    if response.status_code == 503:
+        logging.error('Куки не актуальны')
+        cookies = get_token_and_cookies_from_chrom()['cookies']
+        response = requests.get(url=url_product, cookies=cookies, headers=headers)
+    content_json = response.json()
+    other_params = {
+        'brand': content_json['product']['brand']['name'],
+        'stock': content_json['product']['offer']['stock'],
+        'category': content_json['product_taxons'][-1]['name'],
+    }
+    return other_params
 
 
 if __name__ == '__main__':
