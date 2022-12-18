@@ -2,7 +2,8 @@ import logging
 import time
 from pprint import pprint
 import requests
-from silenium_parser import get_token_from_file, get_token_and_cookies_from_chrom, get_cookies_from_file
+from silenium_parser import get_token_from_file, get_headers_and_cookies_from_chrom, get_cookies_from_file, \
+    get_user_agent_from_file
 
 
 def get_products(name_products: str,
@@ -39,7 +40,7 @@ def get_products(name_products: str,
         url = f'https://sbermarket.ru/api/v3/stores/{number_market}/products'
         response = requests.get(url=url, params=params, headers=headers, proxies=proxies)
         if response.status_code == 401:
-            headers['client-token'] = get_token_and_cookies_from_chrom()['token']
+            headers['client-token'] = get_headers_and_cookies_from_chrom()['token']
             response = requests.get(url=url, params=params, headers=headers, proxies=proxies)
         content_json = response.json()
         total_pages = int(content_json['meta']['total_pages'])
@@ -73,14 +74,15 @@ def get_other_params_product(url_product: str, proxies: dict[str: str] = None) -
     """Функция получения дополнительных параметров для продуктов"""
     headers = {
         'referer': 'https://sbermarket.ru/metro/search?keywords=cjr',
-        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/108.0.0.0 Safari/537.36'
+        'user-agent': get_user_agent_from_file()
     }
     cookies = get_cookies_from_file()
     response = requests.get(url=url_product, cookies=cookies, headers=headers, proxies=proxies)
     if response.status_code == 503:
         logging.error('Куки не актуальны')
-        cookies = get_token_and_cookies_from_chrom()['cookies']
+        headers_and_cookies = get_headers_and_cookies_from_chrom()
+        cookies = headers_and_cookies['cookies']
+        headers['user-agent'] = headers_and_cookies['user_agent']
         response = requests.get(url=url_product, cookies=cookies, headers=headers, proxies=proxies)
     content_json = response.json()
     # Возможно получение прочих параметров из словаря content_json
