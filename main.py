@@ -93,6 +93,7 @@ def get_other_params_product(url_product: str, proxies: dict[str: str] = None) -
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     # Пример для прокси
+    # Селениум работает без прокси!!!! только реквест
     # proxies = {
     #     'http': 'http://85.26.146.169:80',
     #     'https': 'http://185.15.172.212:3128',
