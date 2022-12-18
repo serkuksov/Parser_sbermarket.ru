@@ -22,9 +22,9 @@ def get_headers_and_cookies_from_chrom(virtual_display: bool = True) -> dict[str
     в переменной BROWSER_PATH
     Переменная virtual_display=False позволяет отключить виртуальный дисплей для отображения браузера"""
     if virtual_display:
+        # TODO Стоит переделать на декоратор
         display = Display(visible=False, size=(1024, 768))
         display.start()
-    # with Display(visible=False, size=(1024, 768)) as disp:
     driver_path = ChromeDriverManager().install()
     logging.info('Открываю браузер хром для получения токена')
     try:
@@ -47,6 +47,7 @@ def get_headers_and_cookies_from_chrom(virtual_display: bool = True) -> dict[str
     save_cookies_in_file(cookies=cookies)
     save_user_agent_in_file(user_agent=user_agent)
     if virtual_display:
+        # TODO Стоит переделать на декоратор
         display.stop()
     return {'token': token,
             'cookies': cookies,
@@ -60,7 +61,7 @@ def save_token_in_file(token: str):
     logging.info('Токен сохранен в файл')
 
 
-def save_user_agent_in_file(user_agent: dict):
+def save_user_agent_in_file(user_agent: str):
     """Сохраняет user-agent в файл"""
     with open('user_agent.txt', 'w', encoding='utf-8') as f:
         f.write(user_agent)
